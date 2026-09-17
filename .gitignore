@@ -1,0 +1,12 @@
+# секреты и локальное окружение
+.env
+*.env
+secrets*
+*.key
+*.pem
+id_*
+
+# служебное
+__pycache__/
+*.pyc
+.DS_Store
