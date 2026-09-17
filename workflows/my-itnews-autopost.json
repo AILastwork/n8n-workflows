@@ -1,0 +1,757 @@
+{
+  "id": "nscEU2gaItJmgYN6",
+  "name": "GitHub+14 sources → Telegram (production)",
+  "description": null,
+  "active": true,
+  "activeVersionId": "206f65c4-1abf-4636-80eb-2eeddbf9aa9e",
+  "isArchived": false,
+  "versionCounter": 40,
+  "sourceWorkflowId": null,
+  "nodes": [
+    {
+      "id": "sched-4595fa37-8652-47c0-a292-87447b2e60ee",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -960,
+        16
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0,30 9-22 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "code-35b7d7da-9b69-465a-be72-ce2e38e5e143",
+      "name": "Pick Source",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -688,
+        80
+      ],
+      "parameters": {
+        "jsCode": "// Router: pick source by current MSK time (container TZ=Europe/Moscow)\nconst SOURCES = [\n  {\"name\":\"OpenAI\",\"url\":\"https://openai.com/news/rss.xml\"},\n  {\"name\":\"Google AI\",\"url\":\"https://blog.google/technology/ai/rss/\"},\n  {\"name\":\"Anthropic\",\"url\":\"https://www.anthropic.com/news/rss.xml\"},\n  {\"name\":\"Hugging Face\",\"url\":\"https://huggingface.co/blog/feed.xml\"},\n  {\"name\":\"GitHub Changelog\",\"url\":\"https://github.blog/changelog/feed/\"},\n  {\"name\":\"TechCrunch AI\",\"url\":\"https://techcrunch.com/category/artificial-intelligence/feed/\"},\n  {\"name\":\"The Verge\",\"url\":\"https://www.theverge.com/rss/index.xml\"},\n  {\"name\":\"Habr Develop\",\"url\":\"https://habr.com/ru/rss/flows/develop/all/?fl=ru\"},\n  {\"name\":\"The Hacker News\",\"url\":\"https://feeds.feedburner.com/TheHackersNews\"},\n  {\"name\":\"Krebs Security\",\"url\":\"https://krebsonsecurity.com/feed/\"},\n  {\"name\":\"Bleeping Comp\",\"url\":\"https://www.bleepingcomputer.com/feed/\"},\n  {\"name\":\"Habr Admin\",\"url\":\"https://habr.com/ru/rss/flows/admin/all/?fl=ru\"},\n  {\"name\":\"Kubernetes\",\"url\":\"https://kubernetes.io/feed.xml\"},\n  {\"name\":\"Docker\",\"url\":\"https://www.docker.com/blog/feed/\"},\n];\nconst SLOTS = [];\nfor (let hr = 9; hr <= 22; hr++) { SLOTS.push([hr,0]); SLOTS.push([hr,30]); }\nconst now = new Date();\nconst h = now.getHours();\nconst m = now.getMinutes();\nlet idx = -1;\nfor (let i = 0; i < SLOTS.length; i++) {\n  if (SLOTS[i][0] === h && Math.abs(SLOTS[i][1] - m) <= 5) { idx = i; break; }\n}\nif (idx < 0) return [];\nconst src = SOURCES[idx % SOURCES.length];\nreturn [{ json: { url: src.url, sourceName: src.name, slotIndex: idx } }];\n"
+      }
+    },
+    {
+      "id": "rss-a624cefc-04ff-487c-b7a8-e7be5355431d",
+      "name": "RSS Read",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -448,
+        -16
+      ],
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "limit-9dd050be-1ac3-47cd-b3a1-662ee10b137b",
+      "name": "Limit",
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        -16
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "dedup-eb9f01bf-9815-4e9e-b6ec-ca68803452ea",
+      "name": "Remove Duplicates",
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        -336,
+        256
+      ],
+      "parameters": {
+        "operation": "removeItemsSeenInPreviousExecutions",
+        "dedupeValue": "={{ $json.guid }}",
+        "options": {
+          "scope": "node",
+          "historySize": 10000
+        }
+      }
+    },
+    {
+      "id": "chain-8565bc3b-5642-415b-80eb-6ce604abbc95",
+      "name": "Basic LLM Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -928,
+        288
+      ],
+      "parameters": {
+        "promptType": "define",
+        "text": "=Ты — редактор Telegram-канала «ИИ, технологии и безопасность».\nНапиши красивый русскоязычный пост в HTML-разметке Telegram по этой новости.\n\nИсточник: {{ $('Pick Source').item.json.sourceName }}\nЗаголовок: {{ $json.title }}\nСсылка: {{ $json.link }}\nМатериал: {{ ($json[\"content:encoded\"] || $json.contentSnippet || $json.content || $json.summary || \"\").slice(0, 8000) }}\n\nФормат (строго):\n1) Первая строка: 1 тематический эмодзи + <b>краткий заголовок</b> (до 80 символов, без точки в конце).\n2) Пустая строка.\n3) 2–3 предложения вводного контекста своими словами (без markdown, только теги <b>, <i>, <code>).\n4) Пустая строка.\n5) Раздел «<b>🔑 Ключевые изменения:</b>» и 3–5 пунктов, каждый начинается с эмодзи (▪️ ✅ 🚀 ⚡ 🔒 🛠️ 📊) и <b>жирного тезиса</b>: пояснение.\n6) Пустая строка.\n7) Раздел «<b>💡 Почему это важно:</b>» — 1–2 предложения с практическим выводом.\n8) Пустая строка.\n9) Ссылка: <a href=\"{{ $json.link }}\">📖 Читать первоисточник</a>\n10) Пустая строка.\n11) Строка «<i>Источник: {{ $('Pick Source').item.json.sourceName }}</i>»\n12) Пустая строка.\n13) 2–3 хэштега через пробел, релевантные теме: #ИИ #Технологии #Безопасность #DevOps #GitHub #OpenAI …\n\nОграничения:\n- Только теги <b>, <i>, <code>, <a href=\"...\">. Никогда <br>, <p>, <ul>, <li>, **, __, ##, ---.\n- Символы < > внутри текста заменяй на &lt; &gt;.\n- Символ & заменяй на &amp;, кроме готовых сущностей.\n- Не выдумывай факты. Не начинай с «В этой новости», «Сегодня», «Как известно».\n- Итоговый объём HTML: 800–1500 символов.",
+        "batching": {}
+      }
+    },
+    {
+      "id": "tg-46302170-b29f-4d35-802a-9548a226d402",
+      "name": "Send a text message",
+      "webhookId": "3b168aac-f535-465e-b001-f30b50097716",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "position": [
+        -256,
+        576
+      ],
+      "parameters": {
+        "chatId": "-1003895715777",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "disable_web_page_preview": true,
+          "parse_mode": "HTML"
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "LGU1efUrXxVCtEmh",
+          "name": "Antology_service_bot"
+        }
+      }
+    },
+    {
+      "id": "b0556aa1-a727-40c8-98c5-03c2aaf8b3ca",
+      "name": "OpenRouter Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -928,
+        544
+      ],
+      "parameters": {
+        "model": "meta-llama/llama-3.3-70b-instruct",
+        "options": {
+          "maxTokens": 700,
+          "temperature": 0.3
+        }
+      },
+      "credentials": {
+        "openRouterApi": {
+          "id": "XMVpnLv7Zv7ZFqrb",
+          "name": "OpenRouter (Anatoly)"
+        }
+      }
+    },
+    {
+      "id": "guard-1c9f7a30-4b2e-4d61-9a70-2f5c8b0d4e11",
+      "name": "Guard Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -592,
+        512
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Guard Output (строгий режим).\n// Ставится между Basic LLM Chain и узлом «Публиковать?».\n// Ничего не подменяет: либо отдаёт годный текст (ok: true), либо помечает\n// отбраковку (ok: false) с причиной. Решение о публикации — у следующего узла.\n\nlet src = {};\ntry { src = $('Remove Duplicates').item.json || {}; } catch (e) { src = {}; }\nlet sourceName = '';\ntry { sourceName = ($('Pick Source').item.json || {}).sourceName || ''; } catch (e) { sourceName = ''; }\n\nconst title = String(src.title || '').trim();\nconst link = String(src.link || '').trim();\n\nconst reject = (reason) => ({\n  json: { ok: false, reason, title, link, sourceName }\n});\n\nconst rawField = $json.text;\nif (rawField === undefined || rawField === null) return reject('модель не вернула поле text');\n\nlet text = String(rawField).replace(/<think[\\s\\S]*?<\\/think>\\s*/gi, '').trim();\nif (!text) return reject('пустой ответ модели');\n\n// --- признаки вырожденного вывода ---\nconst len = text.length;\nif (len < 200) return reject('слишком короткий текст: ' + len + ' симв.');\nif (len > 3500) return reject('слишком длинный текст: ' + len + ' симв.');\n\nconst cyr = (text.match(/[а-яёА-ЯЁ]/g) || []).length;\nif (cyr < 100) return reject('мало кириллицы: ' + cyr + ' симв. при длине ' + len);\n\nconst counts = Object.create(null);\nfor (const ch of text) counts[ch] = (counts[ch] || 0) + 1;\nconst uniq = Object.keys(counts).length;\nif (uniq < 25) return reject('мало уникальных символов: ' + uniq);\n\nlet topCh = '', topN = 0;\nfor (const k in counts) if (counts[k] > topN) { topN = counts[k]; topCh = k; }\nif (topN / len > 0.25) {\n  const shown = topCh === '\\n' ? '\\\\n' : (topCh === ' ' ? 'пробел' : topCh);\n  return reject('символ «' + shown + '» занимает ' + Math.round(topN / len * 100) + '% текста');\n}\n\nif (/(.)\\1{29,}/.test(text)) return reject('30+ одинаковых символов подряд');\n\n// --- разметка: экранируем всё, кроме тегов, понятных Telegram ---\nconst ALLOWED = /^<\\/?(b|strong|i|em|u|s|strike|del|code|pre|a|blockquote)(\\s+href=\"[^\"]*\")?\\s*\\/?>$/i;\ntext = text.replace(/<[^>]*>?/g, (m) => (ALLOWED.test(m) ? m : m.replace(/</g, '&lt;').replace(/>/g, '&gt;')));\n\n// Санитайз мог съесть содержимое, если это была сплошная битая разметка.\nconst cyrAfter = (text.match(/[а-яёА-ЯЁ]/g) || []).length;\nif (cyrAfter < 100) return reject('после очистки разметки осталось мало текста: ' + cyrAfter + ' симв.');\n\n// --- парность тегов: Telegram падает на незакрытых ---\nconst openTags = (text.match(/<(?:b|strong|i|em|u|s|strike|del|code|pre|a|blockquote)(?:\\s[^>]*)?>/gi) || []).length;\nconst closeTags = (text.match(/<\\/(?:b|strong|i|em|u|s|strike|del|code|pre|a|blockquote)>/gi) || []).length;\nif (openTags !== closeTags) {\n  return reject('незакрытая разметка: ' + openTags + ' открывающих и ' + closeTags + ' закрывающих тегов');\n}\n\nreturn { json: { ok: true, text, title, link, sourceName } };\n"
+      }
+    },
+    {
+      "id": "if-publish-0001",
+      "name": "Публиковать?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -392,
+        512
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-ok",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "alert-ops-0001",
+      "name": "Alert Ops",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        692
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Alert Ops — формирует сообщение об отбраковке для темы «Операции».\n// Выполняется только по ветке ok=false. В канал ничего не уходит.\n\nconst esc = (s) => String(s || '')\n  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\n\nconst j = $json || {};\nconst reason = esc(j.reason || 'причина не указана');\nconst title = esc(String(j.title || '').slice(0, 200));\nconst link = esc(j.link || '');\nconst source = esc(j.sourceName || 'неизвестен');\n\nconst wf = $workflow || {};\nconst ex = $execution || {};\n\nconst lines = [];\nlines.push('⚠️ <b>Автопостинг: пост отбракован</b>');\nlines.push('');\nlines.push('<b>Причина:</b> ' + reason);\nlines.push('<b>Источник:</b> ' + source);\nif (title) lines.push('<b>Новость:</b> ' + title);\nif (link) lines.push('<a href=\"' + link + '\">Первоисточник</a>');\nlines.push('');\nlines.push('В канал ничего не отправлено. Слот пропущен, следующая попытка — по расписанию.');\nlines.push('');\nlines.push('<i>Воркфлоу: ' + esc(wf.name || 'My_ITnews') + ' · запуск ' + esc(ex.id || '?') + '</i>');\n\nreturn { json: { alert: lines.join('\\n') } };\n"
+      }
+    },
+    {
+      "id": "send-ops-0001",
+      "name": "Send Ops Alert",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        8,
+        692
+      ],
+      "parameters": {
+        "chatId": "<OPS_GROUP_CHAT_ID>",
+        "text": "={{ $json.alert }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "disable_web_page_preview": true,
+          "parse_mode": "HTML",
+          "message_thread_id": 14
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "LGU1efUrXxVCtEmh",
+          "name": "Antology_service_bot"
+        }
+      },
+      "webhookId": "1464ea57-745d-4646-9047-597b871c54bb"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Pick Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick Source": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Guard Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guard Output": {
+      "main": [
+        [
+          {
+            "node": "Публиковать?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Публиковать?": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Alert Ops",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Ops": {
+      "main": [
+        [
+          {
+            "node": "Send Ops Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "activeVersion": {
+    "versionId": "206f65c4-1abf-4636-80eb-2eeddbf9aa9e",
+    "workflowId": "nscEU2gaItJmgYN6",
+    "nodes": [
+      {
+        "id": "sched-4595fa37-8652-47c0-a292-87447b2e60ee",
+        "name": "Schedule Trigger",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          -960,
+          16
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0,30 9-22 * * *"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "code-35b7d7da-9b69-465a-be72-ce2e38e5e143",
+        "name": "Pick Source",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -688,
+          80
+        ],
+        "parameters": {
+          "jsCode": "// Router: pick source by current MSK time (container TZ=Europe/Moscow)\nconst SOURCES = [\n  {\"name\":\"OpenAI\",\"url\":\"https://openai.com/news/rss.xml\"},\n  {\"name\":\"Google AI\",\"url\":\"https://blog.google/technology/ai/rss/\"},\n  {\"name\":\"Anthropic\",\"url\":\"https://www.anthropic.com/news/rss.xml\"},\n  {\"name\":\"Hugging Face\",\"url\":\"https://huggingface.co/blog/feed.xml\"},\n  {\"name\":\"GitHub Changelog\",\"url\":\"https://github.blog/changelog/feed/\"},\n  {\"name\":\"TechCrunch AI\",\"url\":\"https://techcrunch.com/category/artificial-intelligence/feed/\"},\n  {\"name\":\"The Verge\",\"url\":\"https://www.theverge.com/rss/index.xml\"},\n  {\"name\":\"Habr Develop\",\"url\":\"https://habr.com/ru/rss/flows/develop/all/?fl=ru\"},\n  {\"name\":\"The Hacker News\",\"url\":\"https://feeds.feedburner.com/TheHackersNews\"},\n  {\"name\":\"Krebs Security\",\"url\":\"https://krebsonsecurity.com/feed/\"},\n  {\"name\":\"Bleeping Comp\",\"url\":\"https://www.bleepingcomputer.com/feed/\"},\n  {\"name\":\"Habr Admin\",\"url\":\"https://habr.com/ru/rss/flows/admin/all/?fl=ru\"},\n  {\"name\":\"Kubernetes\",\"url\":\"https://kubernetes.io/feed.xml\"},\n  {\"name\":\"Docker\",\"url\":\"https://www.docker.com/blog/feed/\"},\n];\nconst SLOTS = [];\nfor (let hr = 9; hr <= 22; hr++) { SLOTS.push([hr,0]); SLOTS.push([hr,30]); }\nconst now = new Date();\nconst h = now.getHours();\nconst m = now.getMinutes();\nlet idx = -1;\nfor (let i = 0; i < SLOTS.length; i++) {\n  if (SLOTS[i][0] === h && Math.abs(SLOTS[i][1] - m) <= 5) { idx = i; break; }\n}\nif (idx < 0) return [];\nconst src = SOURCES[idx % SOURCES.length];\nreturn [{ json: { url: src.url, sourceName: src.name, slotIndex: idx } }];\n"
+        }
+      },
+      {
+        "id": "rss-a624cefc-04ff-487c-b7a8-e7be5355431d",
+        "name": "RSS Read",
+        "type": "n8n-nodes-base.rssFeedRead",
+        "typeVersion": 1.2,
+        "position": [
+          -448,
+          -16
+        ],
+        "parameters": {
+          "url": "={{ $json.url }}",
+          "options": {}
+        }
+      },
+      {
+        "id": "limit-9dd050be-1ac3-47cd-b3a1-662ee10b137b",
+        "name": "Limit",
+        "type": "n8n-nodes-base.limit",
+        "typeVersion": 1,
+        "position": [
+          -272,
+          -16
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "dedup-eb9f01bf-9815-4e9e-b6ec-ca68803452ea",
+        "name": "Remove Duplicates",
+        "type": "n8n-nodes-base.removeDuplicates",
+        "typeVersion": 2,
+        "position": [
+          -336,
+          256
+        ],
+        "parameters": {
+          "operation": "removeItemsSeenInPreviousExecutions",
+          "dedupeValue": "={{ $json.guid }}",
+          "options": {
+            "scope": "node",
+            "historySize": 10000
+          }
+        }
+      },
+      {
+        "id": "chain-8565bc3b-5642-415b-80eb-6ce604abbc95",
+        "name": "Basic LLM Chain",
+        "type": "@n8n/n8n-nodes-langchain.chainLlm",
+        "typeVersion": 1.9,
+        "position": [
+          -928,
+          288
+        ],
+        "parameters": {
+          "promptType": "define",
+          "text": "=Ты — редактор Telegram-канала «ИИ, технологии и безопасность».\nНапиши красивый русскоязычный пост в HTML-разметке Telegram по этой новости.\n\nИсточник: {{ $('Pick Source').item.json.sourceName }}\nЗаголовок: {{ $json.title }}\nСсылка: {{ $json.link }}\nМатериал: {{ ($json[\"content:encoded\"] || $json.contentSnippet || $json.content || $json.summary || \"\").slice(0, 8000) }}\n\nФормат (строго):\n1) Первая строка: 1 тематический эмодзи + <b>краткий заголовок</b> (до 80 символов, без точки в конце).\n2) Пустая строка.\n3) 2–3 предложения вводного контекста своими словами (без markdown, только теги <b>, <i>, <code>).\n4) Пустая строка.\n5) Раздел «<b>🔑 Ключевые изменения:</b>» и 3–5 пунктов, каждый начинается с эмодзи (▪️ ✅ 🚀 ⚡ 🔒 🛠️ 📊) и <b>жирного тезиса</b>: пояснение.\n6) Пустая строка.\n7) Раздел «<b>💡 Почему это важно:</b>» — 1–2 предложения с практическим выводом.\n8) Пустая строка.\n9) Ссылка: <a href=\"{{ $json.link }}\">📖 Читать первоисточник</a>\n10) Пустая строка.\n11) Строка «<i>Источник: {{ $('Pick Source').item.json.sourceName }}</i>»\n12) Пустая строка.\n13) 2–3 хэштега через пробел, релевантные теме: #ИИ #Технологии #Безопасность #DevOps #GitHub #OpenAI …\n\nОграничения:\n- Только теги <b>, <i>, <code>, <a href=\"...\">. Никогда <br>, <p>, <ul>, <li>, **, __, ##, ---.\n- Символы < > внутри текста заменяй на &lt; &gt;.\n- Символ & заменяй на &amp;, кроме готовых сущностей.\n- Не выдумывай факты. Не начинай с «В этой новости», «Сегодня», «Как известно».\n- Итоговый объём HTML: 800–1500 символов.",
+          "batching": {}
+        }
+      },
+      {
+        "id": "tg-46302170-b29f-4d35-802a-9548a226d402",
+        "name": "Send a text message",
+        "webhookId": "3b168aac-f535-465e-b001-f30b50097716",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1,
+        "retryOnFail": true,
+        "maxTries": 3,
+        "waitBetweenTries": 3000,
+        "position": [
+          -256,
+          576
+        ],
+        "parameters": {
+          "chatId": "-1003895715777",
+          "text": "={{ $json.text }}",
+          "additionalFields": {
+            "appendAttribution": false,
+            "disable_web_page_preview": true,
+            "parse_mode": "HTML"
+          }
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "LGU1efUrXxVCtEmh",
+            "name": "Antology_service_bot"
+          }
+        }
+      },
+      {
+        "id": "b0556aa1-a727-40c8-98c5-03c2aaf8b3ca",
+        "name": "OpenRouter Chat Model",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          -928,
+          544
+        ],
+        "parameters": {
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "options": {
+            "maxTokens": 700,
+            "temperature": 0.3
+          }
+        },
+        "credentials": {
+          "openRouterApi": {
+            "id": "XMVpnLv7Zv7ZFqrb",
+            "name": "OpenRouter (Anatoly)"
+          }
+        }
+      },
+      {
+        "id": "guard-1c9f7a30-4b2e-4d61-9a70-2f5c8b0d4e11",
+        "name": "Guard Output",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -592,
+          512
+        ],
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "// Guard Output (строгий режим).\n// Ставится между Basic LLM Chain и узлом «Публиковать?».\n// Ничего не подменяет: либо отдаёт годный текст (ok: true), либо помечает\n// отбраковку (ok: false) с причиной. Решение о публикации — у следующего узла.\n\nlet src = {};\ntry { src = $('Remove Duplicates').item.json || {}; } catch (e) { src = {}; }\nlet sourceName = '';\ntry { sourceName = ($('Pick Source').item.json || {}).sourceName || ''; } catch (e) { sourceName = ''; }\n\nconst title = String(src.title || '').trim();\nconst link = String(src.link || '').trim();\n\nconst reject = (reason) => ({\n  json: { ok: false, reason, title, link, sourceName }\n});\n\nconst rawField = $json.text;\nif (rawField === undefined || rawField === null) return reject('модель не вернула поле text');\n\nlet text = String(rawField).replace(/<think[\\s\\S]*?<\\/think>\\s*/gi, '').trim();\nif (!text) return reject('пустой ответ модели');\n\n// --- признаки вырожденного вывода ---\nconst len = text.length;\nif (len < 200) return reject('слишком короткий текст: ' + len + ' симв.');\nif (len > 3500) return reject('слишком длинный текст: ' + len + ' симв.');\n\nconst cyr = (text.match(/[а-яёА-ЯЁ]/g) || []).length;\nif (cyr < 100) return reject('мало кириллицы: ' + cyr + ' симв. при длине ' + len);\n\nconst counts = Object.create(null);\nfor (const ch of text) counts[ch] = (counts[ch] || 0) + 1;\nconst uniq = Object.keys(counts).length;\nif (uniq < 25) return reject('мало уникальных символов: ' + uniq);\n\nlet topCh = '', topN = 0;\nfor (const k in counts) if (counts[k] > topN) { topN = counts[k]; topCh = k; }\nif (topN / len > 0.25) {\n  const shown = topCh === '\\n' ? '\\\\n' : (topCh === ' ' ? 'пробел' : topCh);\n  return reject('символ «' + shown + '» занимает ' + Math.round(topN / len * 100) + '% текста');\n}\n\nif (/(.)\\1{29,}/.test(text)) return reject('30+ одинаковых символов подряд');\n\n// --- разметка: экранируем всё, кроме тегов, понятных Telegram ---\nconst ALLOWED = /^<\\/?(b|strong|i|em|u|s|strike|del|code|pre|a|blockquote)(\\s+href=\"[^\"]*\")?\\s*\\/?>$/i;\ntext = text.replace(/<[^>]*>?/g, (m) => (ALLOWED.test(m) ? m : m.replace(/</g, '&lt;').replace(/>/g, '&gt;')));\n\n// Санитайз мог съесть содержимое, если это была сплошная битая разметка.\nconst cyrAfter = (text.match(/[а-яёА-ЯЁ]/g) || []).length;\nif (cyrAfter < 100) return reject('после очистки разметки осталось мало текста: ' + cyrAfter + ' симв.');\n\n// --- парность тегов: Telegram падает на незакрытых ---\nconst openTags = (text.match(/<(?:b|strong|i|em|u|s|strike|del|code|pre|a|blockquote)(?:\\s[^>]*)?>/gi) || []).length;\nconst closeTags = (text.match(/<\\/(?:b|strong|i|em|u|s|strike|del|code|pre|a|blockquote)>/gi) || []).length;\nif (openTags !== closeTags) {\n  return reject('незакрытая разметка: ' + openTags + ' открывающих и ' + closeTags + ' закрывающих тегов');\n}\n\nreturn { json: { ok: true, text, title, link, sourceName } };\n"
+        }
+      },
+      {
+        "id": "if-publish-0001",
+        "name": "Публиковать?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          -392,
+          512
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "cond-ok",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                },
+                "leftValue": "={{ $json.ok }}",
+                "rightValue": ""
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "alert-ops-0001",
+        "name": "Alert Ops",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -192,
+          692
+        ],
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "// Alert Ops — формирует сообщение об отбраковке для темы «Операции».\n// Выполняется только по ветке ok=false. В канал ничего не уходит.\n\nconst esc = (s) => String(s || '')\n  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\n\nconst j = $json || {};\nconst reason = esc(j.reason || 'причина не указана');\nconst title = esc(String(j.title || '').slice(0, 200));\nconst link = esc(j.link || '');\nconst source = esc(j.sourceName || 'неизвестен');\n\nconst wf = $workflow || {};\nconst ex = $execution || {};\n\nconst lines = [];\nlines.push('⚠️ <b>Автопостинг: пост отбракован</b>');\nlines.push('');\nlines.push('<b>Причина:</b> ' + reason);\nlines.push('<b>Источник:</b> ' + source);\nif (title) lines.push('<b>Новость:</b> ' + title);\nif (link) lines.push('<a href=\"' + link + '\">Первоисточник</a>');\nlines.push('');\nlines.push('В канал ничего не отправлено. Слот пропущен, следующая попытка — по расписанию.');\nlines.push('');\nlines.push('<i>Воркфлоу: ' + esc(wf.name || 'My_ITnews') + ' · запуск ' + esc(ex.id || '?') + '</i>');\n\nreturn { json: { alert: lines.join('\\n') } };\n"
+        }
+      },
+      {
+        "id": "send-ops-0001",
+        "name": "Send Ops Alert",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1,
+        "position": [
+          8,
+          692
+        ],
+        "parameters": {
+          "chatId": "<OPS_GROUP_CHAT_ID>",
+          "text": "={{ $json.alert }}",
+          "additionalFields": {
+            "appendAttribution": false,
+            "disable_web_page_preview": true,
+            "parse_mode": "HTML",
+            "message_thread_id": 14
+          }
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "LGU1efUrXxVCtEmh",
+            "name": "Antology_service_bot"
+          }
+        },
+        "webhookId": "1464ea57-745d-4646-9047-597b871c54bb"
+      }
+    ],
+    "connections": {
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Pick Source",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Pick Source": {
+        "main": [
+          [
+            {
+              "node": "RSS Read",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "RSS Read": {
+        "main": [
+          [
+            {
+              "node": "Limit",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Limit": {
+        "main": [
+          [
+            {
+              "node": "Remove Duplicates",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Remove Duplicates": {
+        "main": [
+          [
+            {
+              "node": "Basic LLM Chain",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          []
+        ]
+      },
+      "Basic LLM Chain": {
+        "main": [
+          [
+            {
+              "node": "Guard Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenRouter Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Basic LLM Chain",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Guard Output": {
+        "main": [
+          [
+            {
+              "node": "Публиковать?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Публиковать?": {
+        "main": [
+          [
+            {
+              "node": "Send a text message",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Alert Ops",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Alert Ops": {
+        "main": [
+          [
+            {
+              "node": "Send Ops Alert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "Анатолий Никитин",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "createdAt": "2026-09-17T09:40:36.972Z",
+    "updatedAt": "2026-09-17T09:40:36.972Z",
+    "workflowPublishHistory": [
+      {
+        "id": 64,
+        "workflowId": "nscEU2gaItJmgYN6",
+        "versionId": "206f65c4-1abf-4636-80eb-2eeddbf9aa9e",
+        "event": "activated",
+        "userId": "155d77f2-8b98-4dc2-97de-ba879e1b22c3",
+        "createdAt": "2026-09-17T09:40:37.607Z"
+      }
+    ]
+  }
+}
