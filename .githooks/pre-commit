@@ -1,0 +1,4 @@
+#!/bin/sh
+# Не даёт закоммитить секреты и внутренние идентификаторы.
+# Подключение (один раз после клонирования): git config core.hooksPath .githooks
+exec python3 "$(git rev-parse --show-toplevel)/export_workflows.py" --check

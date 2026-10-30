@@ -51,11 +51,21 @@ text = text.replace(/<[^>]*>?/g, (m) => (ALLOWED.test(m) ? m : m.replace(/</g, '
 const cyrAfter = (text.match(/[а-яёА-ЯЁ]/g) || []).length;
 if (cyrAfter < 100) return reject('после очистки разметки осталось мало текста: ' + cyrAfter + ' симв.');
 
-// --- парность тегов: Telegram падает на незакрытых ---
-const openTags = (text.match(/<(?:b|strong|i|em|u|s|strike|del|code|pre|a|blockquote)(?:\s[^>]*)?>/gi) || []).length;
-const closeTags = (text.match(/<\/(?:b|strong|i|em|u|s|strike|del|code|pre|a|blockquote)>/gi) || []).length;
-if (openTags !== closeTags) {
-  return reject('незакрытая разметка: ' + openTags + ' открывающих и ' + closeTags + ' закрывающих тегов');
+// --- вложенность тегов: Telegram падает на незакрытых и перекрёстных ---
+// Простого подсчёта мало: <b><i></b></i> даёт равное число тегов, но не парсится.
+const stack = [];
+const TAG = /<(\/?)(b|strong|i|em|u|s|strike|del|code|pre|a|blockquote)(?:\s[^>]*)?(\/?)>/gi;
+let mt;
+while ((mt = TAG.exec(text)) !== null) {
+  const [, closing, name, selfClosing] = mt;
+  const tag = name.toLowerCase();
+  if (selfClosing) return reject('самозакрывающийся тег <' + tag + '/> Telegram не принимает');
+  if (!closing) { stack.push(tag); continue; }
+  const top = stack.pop();
+  if (top !== tag) {
+    return reject('нарушена вложенность разметки: </' + tag + '> закрывает ' + (top ? '<' + top + '>' : 'ничего'));
+  }
 }
+if (stack.length) return reject('незакрытая разметка: <' + stack.join('>, <') + '>');
 
 return { json: { ok: true, text, title, link, sourceName } };

@@ -2,7 +2,8 @@
 // Выполняется только по ветке ok=false. В канал ничего не уходит.
 
 const esc = (s) => String(s || '')
-  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;');
 
 const j = $json || {};
 const reason = esc(j.reason || 'причина не указана');
@@ -19,7 +20,8 @@ lines.push('');
 lines.push('<b>Причина:</b> ' + reason);
 lines.push('<b>Источник:</b> ' + source);
 if (title) lines.push('<b>Новость:</b> ' + title);
-if (link) lines.push('<a href="' + link + '">Первоисточник</a>');
+// Ссылка идёт в атрибут href — пускаем только http(s), иначе Telegram отобьёт сообщение.
+if (link && /^https?:\/\//i.test(j.link || '')) lines.push('<a href="' + link + '">Первоисточник</a>');
 lines.push('');
 lines.push('В канал ничего не отправлено. Слот пропущен, следующая попытка — по расписанию.');
 lines.push('');

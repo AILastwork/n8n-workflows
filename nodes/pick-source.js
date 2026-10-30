@@ -15,15 +15,13 @@ const SOURCES = [
   {"name":"Kubernetes","url":"https://kubernetes.io/feed.xml"},
   {"name":"Docker","url":"https://www.docker.com/blog/feed/"},
 ];
-const SLOTS = [];
-for (let hr = 9; hr <= 22; hr++) { SLOTS.push([hr,0]); SLOTS.push([hr,30]); }
+// Слоты 9:00, 9:30 … 22:30 — по одному на каждый запуск cron `0,30 9-22 * * *`.
+// Слот определяется по началу получаса, а не по допуску ±5 минут: запуск,
+// задержавшийся в очереди n8n, всё равно попадёт в свой слот, а не пропадёт.
+const FIRST_HOUR = 9, LAST_HOUR = 22;
 const now = new Date();
 const h = now.getHours();
-const m = now.getMinutes();
-let idx = -1;
-for (let i = 0; i < SLOTS.length; i++) {
-  if (SLOTS[i][0] === h && Math.abs(SLOTS[i][1] - m) <= 5) { idx = i; break; }
-}
-if (idx < 0) return [];
+if (h < FIRST_HOUR || h > LAST_HOUR) return [];
+const idx = (h - FIRST_HOUR) * 2 + (now.getMinutes() >= 30 ? 1 : 0);
 const src = SOURCES[idx % SOURCES.length];
 return [{ json: { url: src.url, sourceName: src.name, slotIndex: idx } }];
