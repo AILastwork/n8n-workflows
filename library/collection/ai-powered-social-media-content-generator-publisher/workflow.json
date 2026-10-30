@@ -1,0 +1,678 @@
+{
+  "name": "AI-Powered Social Media Content Generator & Publisher",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a content creation AI for Mikee.ai, a leading AI automation training platform helping businesses leverage AI for marketing, automation, and growth. Your role is to generate engaging and high-value content tailored for LinkedIn, Instagram, Facebook, X (Twitter), and YouTube.\\n\\nYour content should position Mikee.ai as a thought leader in AI automation, AI marketing, AI workflows, AI software, and AI-powered business solutions.\\n\\n## Content Goals:\\n- **Platform-Specific Optimization**: Adapt content style, tone, and format for each platform.\\n- **SEO & Hashtags**: Use trending AI-related hashtags to boost reach.\\n- **Engagement-Driven**: Focus on AI automation tutorials, industry updates, comparisons, case studies, and discussions.\\n- **Consistency**: Maintain a uniform brand voice while tailoring content per platform.\\n- **Data-Backed Strategy**: Analyze performance metrics and refine hashtag strategies.\\n\\n🚀 **Your goal is to establish Mikee.ai as a trusted source of AI automation insights for businesses, entrepreneurs, and marketing professionals.**\\n\\n## Platform-Specific Guidelines:\\n### 1. LinkedIn (Professional, Business-Oriented)\\n- **Style**: Insightful, authoritative.\\n- **Tone**: Business-focused, discussing AI automation, industry trends, case studies.\\n- **Length**: 3-4 sentences with in-depth insights.\\n- **Hashtags**: #AI #Automation #DigitalMarketing #TechTrends #Startup #Marketing #LeadGeneration\\n- **CTA**: Ask for industry opinions or insights.\\n\\n### 2. Instagram (Visual Storytelling, Engagement-Driven)\\n- **Style**: Creative, engaging.\\n- **Tone**: Inspirational, interactive.\\n- **Length**: 2-3 sentences with short-form storytelling.\\n- **Hashtags**: #AI #Marketing #Automation #Entrepreneurship #LeadGen #DigitalSuccess\\n- **CTA**: Use 'Swipe to see more', 'Tag a business owner', 'DM us for AI automation tips!'\\n\\n### 3. Facebook (Community & Engagement)\\n- **Style**: Relatable, business-friendly.\\n- **Tone**: Community-driven, sharing AI success stories, tutorials, client wins.\\n- **Length**: 2-3 sentences, slightly casual but informative.\\n- **Hashtags**: #AIForBusiness #MarketingAutomation #DigitalGrowth #TechSolutions #MarketingTips\\n- **CTA**: Encourage likes, shares, comments on business success stories.\\n\\n### 4. X (Twitter) (Concise, Thought Leadership)\\n- **Style**: Short-form, direct.\\n- **Tone**: Engaging, thought-provoking, AI-focused.\\n- **Length**: 150 characters or less.\\n- **Hashtags**: #AI #Automation #MarketingTech #BusinessGrowth #DigitalMarketing #MachineLearning\\n- **CTA**: Drive engagement with retweets, polls, quick industry questions.\\n\\n## Event Highlight Format:\\n- **Topic**: {{ $json['Post Title/Topic'] }}\\n- **Keywords**: {{ $json.formMode }}\\n- **Visit Link**: If no link is provided, default to https://mikee.ai\\n\\n**Your mission:** Keep Mikee.ai at the forefront of AI automation with engaging, high-quality content that educates, inspires, and converts! 🚀\"\n",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "id": "e38a74d5-a733-4f5c-a97b-2c761b46919b",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        1800,
+        840
+      ],
+      "typeVersion": 1.7
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"event_name\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n\t\t\"event_description\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n\t\t\"platform_posts\": {\n\t\t\t\"type\": \"object\",\n\t\t\t\"properties\": {\n\t\t\t\t\"LinkedIn\": {\n\t\t\t\t\t\"type\": \"object\",\n\t\t\t\t\t\"properties\": {\n\t\t\t\t\t\t\"post\": {\n\t\t\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t\t\t},\n\t\t\t\t\t\t\"hashtags\": {\n\t\t\t\t\t\t\t\"type\": \"array\",\n\t\t\t\t\t\t\t\"items\": {\n\t\t\t\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t},\n\t\t\t\t\t\t\"call_to_action\": {\n\t\t\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t\t\"Instagram\": {\n\t\t\t\t\t\"type\": \"object\",\n\t\t\t\t\t\"properties\": {\n\t\t\t\t\t\t\"image_suggestion\": {\n\t\t\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t\t\t},\n\t\t\t\t\t\t\"caption\": {\n\t\t\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t\t\t},\n\t\t\t\t\t\t\"hashtags\": {\n\t\t\t\t\t\t\t\"type\": \"array\",\n\t\t\t\t\t\t\t\"items\": {\n\t\t\t\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t},\n\t\t\t\t\t\t\"emojis\": {\n\t\t\t\t\t\t\t\"type\": \"array\",\n\t\t\t\t\t\t\t\"items\": {\n\t\t\t\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t},\n\t\t\t\t\t\t\"call_to_action\": {\n\t\t\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t\t\"Facebook\": {\n\t\t\t\t\t\"type\": \"object\",\n\t\t\t\t\t\"properties\": {\n\t\t\t\t\t\t\"post\": {\n\t\t\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t\t\t},\n\t\t\t\t\t\t\"hashtags\": {\n\t\t\t\t\t\t\t\"type\": \"array\",\n\t\t\t\t\t\t\t\"items\": {\n\t\t\t\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t},\n\t\t\t\t\t\t\"call_to_action\": {\n\t\t\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t\t\t},\n\t\t\t\t\t\t\"image_suggestion\": {\n\t\t\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t\t\"Twitter\": {\n\t\t\t\t\t\"type\": \"object\",\n\t\t\t\t\t\"properties\": {\n\t\t\t\t\t\t\"post\": {\n\t\t\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t\t\t},\n\t\t\t\t\t\t\"hashtags\": {\n\t\t\t\t\t\t\t\"type\": \"array\",\n\t\t\t\t\t\t\t\"items\": {\n\t\t\t\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t},\n\t\t\t\t\t\t\"character_limit\": {\n\t\t\t\t\t\t\t\"type\": \"integer\"\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t},\n\t\t\"additional_notes\": {\n\t\t\t\"type\": \"string\"\n\t\t}\n\t}\n}\n"
+      },
+      "id": "31e88059-94ca-4d4e-a673-e0f8cd1ac96e",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        1920,
+        1100
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "image",
+              "fieldType": "file",
+              "acceptFileTypes": ".jpg",
+              "requiredField": "={{ true }}"
+            }
+          ]
+        },
+        "options": {
+          "formTitle": "Review the Text",
+          "formDescription": "=Please review the text, I will be Publishing this on Social Media, note that to generate the text I am using tokents.\nNote below Text : \n\nLinkedin : \n{{ $json.data[0].output.platform_posts.LinkedIn.post }}\n\nFacebook : \n{{ $json.data[0].output.platform_posts.Facebook.post }}\n\nTwitter : \n{{ $json.data[0].output.platform_posts.Twitter.post }}",
+          "buttonLabel": "Proceed to Next Step"
+        }
+      },
+      "id": "37e443e1-6925-44a1-a07e-9eb1120e55a9",
+      "name": "Upload Image",
+      "type": "n8n-nodes-base.form",
+      "position": [
+        940,
+        1480
+      ],
+      "webhookId": "0dc811ef-b2e0-4213-a0c9-e9b5fb9fcbf1",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "id": "eef02dcb-7c7f-4d6c-a1fd-039c8b30f10d",
+      "name": "Aggregate",
+      "type": "n8n-nodes-base.aggregate",
+      "position": [
+        2300,
+        1080
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Thanks",
+        "completionMessage": "=Your post has successfully been submitted LinkeedIn, X and Facbeook.\n\nHere is Link : \n\nhttps://x.com/syncbricks/status/{{ $('X').item.json.id }}\nhttps://facebook.com/{{ $('Publish to Facebook').item.json.post_id }}\nhttps://www.linkedin.com/feed/update/{{ $('Publish to LinkedIn').item.json.urn }}\nhttps://instagram.com/syncbricks_com\n\nThanks \n\nAI Agent\nSyncbricks",
+        "options": {
+          "formTitle": "Al Ansari AI Agent (Job Done)"
+        }
+      },
+      "id": "097e7724-4dc0-4cc9-b12c-2dbdae4e024f",
+      "name": "Form",
+      "type": "n8n-nodes-base.form",
+      "position": [
+        2440,
+        2280
+      ],
+      "webhookId": "e84b9492-038c-4701-a367-c68237ddebf6",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2fb3fd91-c13d-45ce-a7ec-612319a008fc",
+              "name": "metaTop",
+              "type": "object",
+              "value": "={{ $json }}"
+            }
+          ]
+        },
+        "options": {
+          "includeBinary": true
+        }
+      },
+      "id": "7b1d64fc-02ad-4b8f-ad1e-be8894abd932",
+      "name": "Nest Top Meta",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1560,
+        1480
+      ],
+      "typeVersion": 3.3
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "$input.item.binary.top = $input.item.binary.data;\ndelete $input.item.binary.data;\nreturn $input.item;"
+      },
+      "id": "11ddcfe8-1978-4f5a-8c29-67e72920431a",
+      "name": "Rename Image Binary Top Image",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        580,
+        2280
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v20.0",
+        "node": "110638833706072",
+        "edge": "photos",
+        "sendBinaryData": true,
+        "binaryPropertyName": "image",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "message",
+                "value": "={{ $('Aggregate').item.json.data[0].output.platform_posts.Facebook.post }}\n\n{{ $('Aggregate').item.json.data[0].output.platform_posts.Facebook.call_to_action }}\n"
+              },
+              {
+                "name": "link",
+                "value": "={{ $('Aggregate').item.json.data[0].output.platform_posts.Facebook.call_to_action }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "19892590-5ddf-47ac-b544-7a72a68bd45e",
+      "name": "Publish to Facebook",
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "position": [
+        1060,
+        2400
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "JGwi9snHz8qoH1If",
+          "name": "Facebook Graph account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "postAs": "organization",
+        "organization": "30253904",
+        "text": "={{ $('AI Agent').item.json.output.platform_posts.LinkedIn.post }}\n{{ $('Aggregate').item.json.data[0].output.platform_posts.LinkedIn.call_to_action }}",
+        "shareMediaCategory": "IMAGE",
+        "binaryPropertyName": "=image",
+        "additionalFields": {
+          "title": ""
+        }
+      },
+      "id": "b3b0068b-c75a-427c-bb2d-77b21bc6ff16",
+      "name": "Publish to LinkedIn",
+      "type": "n8n-nodes-base.linkedIn",
+      "position": [
+        1040,
+        2160
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "linkedInOAuth2Api": {
+          "id": "IfjU9cfjVSkjoYCn",
+          "name": "LinkedIn account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Get the Data for Social Media Post using the Web Form \n",
+        "height": 400,
+        "width": 1220
+      },
+      "id": "ed5fe0c2-a07a-45f1-90cb-65f21d416a1a",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1480,
+        240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "text": "={{ $('Aggregate').item.json.data[0].output.platform_posts.Twitter.post }}\n",
+        "additionalFields": {}
+      },
+      "id": "c4a2e59d-165a-49cc-8074-9868ee4e0d6c",
+      "name": "X",
+      "type": "n8n-nodes-base.twitter",
+      "position": [
+        1060,
+        1920
+      ],
+      "typeVersion": 2,
+      "credentials": {
+        "twitterOAuth2Api": {
+          "id": "fElsKGo1gd0H6lqJ",
+          "name": "X account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# AI Agent will do its Job to generate relevant Posts for Socail Media\n",
+        "height": 580,
+        "width": 1200,
+        "color": 6
+      },
+      "id": "66ba98a9-24c0-4128-9ad9-792a0d400aae",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1480,
+        660
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "# Get Impage to Be Publshed\n",
+        "height": 500,
+        "width": 2340,
+        "color": 5
+      },
+      "id": "02fafdc7-0272-4f34-9b66-dfbe8e16e70d",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        380,
+        1280
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "# Publish on Social Media\n",
+        "height": 1160,
+        "width": 1840
+      },
+      "id": "21d945c3-446c-4bb9-8696-a70034801485",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        380,
+        1800
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "# Confirmation that post is Published\n",
+        "height": 1140,
+        "width": 500,
+        "color": 4
+      },
+      "id": "c9efdc38-94c6-494e-a932-45b75312bb54",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2240,
+        1800
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3dfdc22a-5f69-4d5e-9fc0-f637695c46f9",
+              "name": "edit_history_tweet_ids",
+              "type": "array",
+              "value": "={{ $json.edit_history_tweet_ids }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "93632f4f-9182-4b76-bbe0-e6d5dd230452",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1420,
+        1920
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v20.0/17841472318439506/media",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "image_url",
+              "value": "={{ $json.data.url }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $('AI Agent').item.json.output.platform_posts.Instagram.caption }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "89f22cf8-9499-4b7f-872d-97099c5d1e50",
+      "name": "Image for Instagram",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1360,
+        2600
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v20.0",
+        "node": "17841472318439506",
+        "edge": "media_publish",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "creation_id",
+                "value": "={{ $json.id }}"
+              },
+              {
+                "name": "caption",
+                "value": "={{ $('AI Agent').item.json.output.platform_posts.Instagram.caption }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "c415eeb9-f916-4c08-afb1-baed3f3280cc",
+      "name": "Publish to Instagram",
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "position": [
+        1680,
+        2600
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "JGwi9snHz8qoH1If",
+          "name": "Facebook Graph account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "id": "1c8f6ba6-c28b-45a8-ba0d-3f2f21ccbfa0",
+      "name": "Merge1",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        2000,
+        2260
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.imgbb.com/1/upload?expiration=600&key=your-api-key",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "multipart/form-data"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "image",
+              "inputDataFieldName": "image"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d9cfdcd1-18db-4d0d-9b6a-66897600e496",
+      "name": "Upload Image to imgbb.com",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1060,
+        2600
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1740,
+        1100
+      ],
+      "id": "f85b595b-cf69-4c79-b0ae-f3c2ef4f7b51",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "XMLG466YsMj0zGVZ",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        1620,
+        840
+      ],
+      "id": "31e40c3c-928f-4bb1-9a98-f8b8cf56b816",
+      "name": "Schedule Trigger"
+    }
+  ],
+  "connections": {
+    "X": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Upload Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Image": {
+      "main": [
+        [
+          {
+            "node": "Nest Top Meta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nest Top Meta": {
+      "main": [
+        [
+          {
+            "node": "Rename Image Binary Top Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image for Instagram": {
+      "main": [
+        [
+          {
+            "node": "Publish to Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish to Facebook": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Publish to LinkedIn": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Publish to Instagram": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Image to imgbb.com": {
+      "main": [
+        [
+          {
+            "node": "Image for Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename Image Binary Top Image": {
+      "main": [
+        [
+          {
+            "node": "X",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Publish to LinkedIn",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Publish to Facebook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Upload Image to imgbb.com",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "a48e8262-46f6-4b45-ad60-27bab7a5b243",
+  "meta": {
+    "templateId": "2950",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a9a1507c9edd4d9ea9ff76131c22772e8129c1cd5a698ebe640c78238c6ac725"
+  },
+  "id": "rjN9r7v26LDWdDSK",
+  "tags": []
+}

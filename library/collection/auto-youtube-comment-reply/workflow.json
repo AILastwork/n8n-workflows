@@ -1,0 +1,348 @@
+{
+  "name": "Auto Youtube Comment Reply",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -20,
+        0
+      ],
+      "id": "8d365247-6a65-4344-b6b0-e1271b064147",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "channelId": "UCon-pJX2rzbu8gXvEHcCaZQ"
+      },
+      "type": "n8n-nodes-base.youTube",
+      "typeVersion": 1,
+      "position": [
+        160,
+        0
+      ],
+      "id": "048e395e-d4be-449c-8e6f-9fa9e8447e3f",
+      "name": "@mikee-ai",
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "ScT2TDqIpkopMoym",
+          "name": "mikee.ai youtube channel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/youtube/v3/commentThreads",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "youTubeOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "part",
+              "value": "snippet,replies"
+            },
+            {
+              "name": "maxResults",
+              "value": "20"
+            },
+            {
+              "name": "allThreadsRelatedToChannelId",
+              "value": "UCon-pJX2rzbu8gXvEHcCaZQ"
+            },
+            {
+              "name": "order",
+              "value": "time"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        340,
+        0
+      ],
+      "id": "4c29a298-613e-4ccf-bcaf-54e945beb10d",
+      "name": "HTTP Request",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "ScT2TDqIpkopMoym",
+          "name": "mikee.ai youtube channel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Generate a friendly YouTube comment reply to this comment - call to action is allways make sure to subscribe to my channle to get access to the free downlaods the subscribers only video on the channel home page sign off is always \"lets build billions together - Mikee\":  {{ $json.comments[0].textOriginal }} "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        940,
+        0
+      ],
+      "id": "a5eeeced-5ecc-427c-8e00-83050e8d4f08",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "XMLG466YsMj0zGVZ",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.googleapis.com/youtube/v3/comments?part=snippet",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "youTubeOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"snippet\": {\n    \"parentId\": \"UgwgdpA1kXNSxu4bir14AaABAg\",\n    \"textOriginal\": {{ $('OpenAI').item.json.message.content }}\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1480,
+        0
+      ],
+      "id": "71c78ef0-ff54-4259-a6b8-54d1d1e91055",
+      "name": "HTTP Request1",
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "ScT2TDqIpkopMoym",
+          "name": "mikee.ai youtube channel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// First check if we have any input data\nconst input = $input.all();\nconsole.log(\"Input data structure:\", JSON.stringify(input, null, 2));\n\n// Check if we have the required data\nif (input && input.length > 0) {\n  const firstItem = input[0];\n  console.log(\"First item structure:\", JSON.stringify(firstItem, null, 2));\n  \n  if (firstItem.json) {\n    console.log(\"JSON structure:\", JSON.stringify(firstItem.json, null, 2));\n    \n    if (firstItem.json.comments && firstItem.json.comments.length > 0) {\n      console.log(\"Comment ID:\", firstItem.json.comments[0].commentId);\n    } else {\n      console.log(\"No comments found in the data\");\n    }\n    \n    if (firstItem.json.text) {\n      console.log(\"OpenAI response:\", firstItem.json.text);\n    } else {\n      console.log(\"No text property found in the data\");\n    }\n  }\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1300,
+        0
+      ],
+      "id": "b5156d29-0c7f-4cd9-a8ab-6f8aed869d78",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process YouTube comment data\nconst processedComments = [];\n\nfor (const item of $input.all()) {\n  if (item.json && item.json.items && Array.isArray(item.json.items)) {\n    for (const commentThread of item.json.items) {\n      // Debug the comment structure\n      console.log(\"Raw comment thread:\", JSON.stringify(commentThread, null, 2));\n      \n      if (commentThread.snippet && commentThread.snippet.topLevelComment) {\n        const comment = commentThread.snippet.topLevelComment.snippet;\n        const threadId = commentThread.id;\n        console.log(\"Using comment ID:\", threadId);\n        \n        processedComments.push({\n          commentId: commentThread.snippet.topLevelComment.id || commentThread.id,\n          threadId: commentThread.id,\n          videoId: commentThread.snippet.videoId,\n          authorDisplayName: comment.authorDisplayName,\n          authorChannelId: comment.authorChannelId ? comment.authorChannelId.value : null,\n          textDisplay: comment.textDisplay,\n          textOriginal: comment.textOriginal,\n          publishedAt: comment.publishedAt,\n          replyCount: commentThread.snippet.totalReplyCount || 0\n        });\n      }\n    }\n  }\n}\n\n// Return the processed data\nreturn [{json: { comments: processedComments }}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        0
+      ],
+      "id": "c2d0881f-5e1b-4851-b8c4-0372f632cfdc",
+      "name": "// Process YouTube comment data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6610b3fd-6b43-4f2a-af85-ebdaa1678752",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        0
+      ],
+      "id": "077974f0-7e8f-4be0-a1ed-16d2f2b8dcaa",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/youtube/v3/commentThreads",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "youTubeOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "part",
+              "value": "snippet,replies"
+            },
+            {
+              "name": "maxResults",
+              "value": "20"
+            },
+            {
+              "name": "allThreadsRelatedToChannelId",
+              "value": "UCon-pJX2rzbu8gXvEHcCaZQ"
+            },
+            {
+              "name": "order",
+              "value": "time"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        -160
+      ],
+      "id": "4adcaf03-5917-4194-8921-45de6ab746cb",
+      "name": "HTTP Request2",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "ScT2TDqIpkopMoym",
+          "name": "mikee.ai youtube channel"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "@mikee-ai",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "@mikee-ai": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "// Process YouTube comment data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "// Process YouTube comment data": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e1e6bd53-b562-4128-b83a-a93132375910",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a9a1507c9edd4d9ea9ff76131c22772e8129c1cd5a698ebe640c78238c6ac725"
+  },
+  "id": "0N5YeV2F2sh6j1WF",
+  "tags": []
+}

@@ -48,7 +48,7 @@ SECRET_PATTERNS = {
     'openai key': re.compile(r'sk-[A-Za-z0-9]{32,}'),
     'приватный id чата': re.compile(r'-100\d{10}(?<!1003895715777)'),
     'внутренний LAN-адрес': re.compile(r'192\.168\.\d{1,3}\.\d{1,3}'),
-    'путь на сервере': re.compile(r'/home/[a-z]+/'),
+    'путь на сервере': re.compile(r'/home/(?!node/)[a-z]+/'),  # /home/node/ — стандартный путь n8n в Docker
 }
 
 VOLATILE = ('updatedAt', 'createdAt', 'versionId', 'triggerCount',

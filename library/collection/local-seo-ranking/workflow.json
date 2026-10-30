@@ -1,0 +1,267 @@
+{
+  "name": "Local SEO Ranking",
+  "nodes": [
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "businessName",
+              "value": "=Itechopedia"
+            },
+            {
+              "name": "location",
+              "value": "=Bangladesh"
+            },
+            {
+              "name": "keywords",
+              "value": "=techopedia\nTechnology"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set Input Parameters",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        440,
+        240
+      ],
+      "id": "ccfcab4f-d89c-4df6-9b76-05aa15126972"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Split keywords string into array\nconst keywords = $input.item.json.keywords.split(',').map(k => k.trim());\nconst location = $input.item.json.location;\nconst businessName = $input.item.json.businessName;\n\n// Create items for each keyword\nreturn keywords.map(keyword => {\n  return {\n    json: {\n      businessName,\n      location,\n      keyword,\n      searchQuery: `${keyword} ${location}`\n    }\n  };\n});"
+      },
+      "name": "Process Keywords",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        620,
+        240
+      ],
+      "id": "0df86a4d-8c98-4a0d-8bea-3818c80f91e1"
+    },
+    {
+      "parameters": {
+        "url": "=https://serpapi.com/search?engine=google&q={{ encodeURIComponent($json.searchQuery + ' ' + $json.businessName) }}&location={{ encodeURIComponent($json.location) }}&businessName={{ encodeURIComponent($json.businessName) }}&hl=en&gl=us&google_domain=google.com\n",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "serpApi",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "name": "Search API Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        800,
+        240
+      ],
+      "id": "8c2f7bf6-a1a9-457a-88d5-673f79523ae3",
+      "credentials": {
+        "serpApi": {
+          "id": "pEZAOswoqayaWXUZ",
+          "name": "SerpAPI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "let rankPosition = 0;\nlet foundBusiness = false;\nconst businessName = $input.item.json.businessName.toLowerCase();\nconst keyword = $input.item.json.keyword;\nconst location = $input.item.json.location;\n\n// Extract organic search results\nconst organicResults = $input.item.json?.organic_results || [];\n\n// Look for the business name in organic results (up to position 20)\nfor (let i = 0; i < Math.min(organicResults.length, 20); i++) {\n  const result = organicResults[i];\n\n  // Convert all text to lowercase for case-insensitive comparison\n  const title = result.title ? result.title.toLowerCase() : \"\";\n  const snippet = result.snippet ? result.snippet.toLowerCase() : \"\";\n  const displayedLink = result.displayed_link ? result.displayed_link.toLowerCase() : \"\";\n  const source = result.source ? result.source.toLowerCase() : \"\";\n\n  // Check if business name appears in any of the fields\n  if (\n    title.includes(businessName) ||\n    snippet.includes(businessName) ||\n    displayedLink.includes(businessName) ||\n    source.includes(businessName)\n  ) {\n    rankPosition = i + 1;\n    foundBusiness = true;\n    break;\n  }\n}\n\n// Return adjusted output\nreturn {\n  json: {\n    businessName: $input.item.json.businessName,\n    keyword,\n    location,\n    date: new Date().toISOString().split('T')[0],\n    position: foundBusiness ? rankPosition : 'Not found in top 20',\n    resultType: foundBusiness ? 'Organic' : 'Not found'\n  }\n};\n"
+      },
+      "name": "Extract Rankings",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        980,
+        240
+      ],
+      "id": "83df3f8f-b7ab-497c-8bec-035d9bcad515"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ZOsdjt3qvY6B0dRrFqgEHhkizsTND84R68VzYO5djoI",
+          "mode": "list",
+          "cachedResultName": "Untitled spreadsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZOsdjt3qvY6B0dRrFqgEHhkizsTND84R68VzYO5djoI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "name": "Save to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [
+        1160,
+        240
+      ],
+      "id": "db0bb0af-dfda-46f1-a7b9-bbeb42e6071b",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aZMZp9AB9hFXX0Qq",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.position !== 'Not found in top 20' && $json.position > 5 }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "Check Rank Alerts",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1160,
+        400
+      ],
+      "id": "82540d18-0942-4e0c-b351-8cba04feaaef"
+    },
+    {
+      "parameters": {
+        "subject": "SEO Alert: Low Ranking for \"{{ $json.keyword }}\" in {{ $json.location }}",
+        "text": "=Your business \"{{ $json.businessName }}\" is currently ranked at position {{ $json.position }} for the keyword \"{{ $json.keyword }}\" in {{ $json.location }}.\n\nThis keyword may need additional SEO attention to improve ranking.\n\nDate: {{ $json.date }}\nResult Type: {{ $json.resultType }}",
+        "options": {}
+      },
+      "name": "Send Alert Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        1420,
+        220
+      ],
+      "id": "80405648-6f77-4627-aa2e-872a05a12128"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "=📊 Local SEO Report for \"{{ $json.businessName }}\"\n\nKeyword: {{ $json.keyword }}\nLocation: {{ $json.location }}\nRank: {{ $json.position }}\nDate: {{ $json.date }}\nResult Type: {{ $json.resultType }}",
+        "additionalFields": {}
+      },
+      "name": "Send to Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1420,
+        420
+      ],
+      "id": "67b092d9-b9f6-421c-a73a-ec888df36b82",
+      "webhookId": "95b62e59-e53b-4b28-af58-09351ac09349"
+    },
+    {
+      "parameters": {},
+      "name": "Manually Trigger & Input Data",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        260,
+        240
+      ],
+      "id": "23197659-cb2d-4869-ad21-a5fb33f993e0"
+    }
+  ],
+  "connections": {
+    "Set Input Parameters": {
+      "main": [
+        [
+          {
+            "node": "Process Keywords",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Keywords": {
+      "main": [
+        [
+          {
+            "node": "Search API Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search API Request": {
+      "main": [
+        [
+          {
+            "node": "Extract Rankings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Rankings": {
+      "main": [
+        [
+          {
+            "node": "Save to Google Sheets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check Rank Alerts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Rank Alerts": {
+      "main": [
+        [
+          {
+            "node": "Send Alert Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send to Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manually Trigger & Input Data": {
+      "main": [
+        [
+          {
+            "node": "Set Input Parameters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7795628c-461b-4804-8d8f-6458ef8b129a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a9a1507c9edd4d9ea9ff76131c22772e8129c1cd5a698ebe640c78238c6ac725"
+  },
+  "id": "w76KFSFuA078Az6t",
+  "tags": []
+}

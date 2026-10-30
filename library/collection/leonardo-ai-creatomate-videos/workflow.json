@@ -1,0 +1,1389 @@
+{
+  "name": "Leonardo AI & Creatomate Videos",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "upload",
+        "options": {}
+      },
+      "id": "b5fe4713-61f1-4c4c-bb38-a97a9ad5449b",
+      "name": "YouTube",
+      "type": "n8n-nodes-base.youTube",
+      "position": [
+        3500,
+        1320
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "SoPXUKma03X2KmGc",
+          "name": "YouTube account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.creatomate.com/v1/renders",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"template_id\": \"b4c5e91a-6693-45ce-a53a-1f21d704e648\",\n  \"modifications\": {\n    \"Image-1.source\": \"{{ $json['Image url 1'] }}\",\n    \"Voiceover-1.source\": \"{{ $json.output.S1 }}\",\n    \"Image-2.source\": \"{{ $json['Image url 2'] }}\",\n    \"Voiceover-2.source\": \"{{ $json.output.S2 }}\",\n    \"Image-3.source\": \"{{ $json['Image url 3'] }}\",\n    \"Voiceover-3.source\": \"{{ $json.output.S3 }}\",\n    \"Image-4.source\": \"{{ $json['Image url 4'] }}\",\n    \"Voiceover-4.source\": \"{{ $json.output.S4 }}\",\n    \"Image-5.source\": \"{{ $json['Image url 5'] }}\",\n    \"Voiceover-5.source\": \"{{ $json.output.S5 }}\",\n    \"Image-6.source\": \"{{ $json['Image url 6'] }}\",\n    \"Voiceover-6.source\": \"{{ $json.output.S6 }}\"\n  }\n}\n",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "393b2087-30ad-4b25-84f6-3dc7116e17ea",
+      "name": "Cre - Generate Video1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        3440,
+        760
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GIRtb3HIaWbYYRRW",
+          "name": "Creatomate.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.creatomate.com/v1/renders/{{ $json.body[0].id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "c752549e-5f41-41de-9ad0-af872ba5a5ef",
+      "name": "Cre - Get Video",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        3840,
+        760
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GIRtb3HIaWbYYRRW",
+          "name": "Creatomate.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Video Script\n1. Please set the trigger frequency, by default it generates 1 short video per day\n2. Fill in the system prompt in the AI agent about the video ideas you have and how many scenarios you would like to have in your video. Each scenario corresponds to a image. \n3. Choose the LLM models for video script generation. By default DeepSeek V3 is used.",
+        "height": 731,
+        "width": 793,
+        "color": 2
+      },
+      "id": "3cd20866-9dc4-4ec8-ad44-99f884493435",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        840,
+        400
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "write about 🔥 FREE DOWNLOAD: Sonship Commentary Bible – New Testament 🔥\n\nReady to Discover Who You Truly Are?\n\nYou’re not a servant, not an outsider—you’re a beloved child of God. But do you really believe it?\n\nIntroducing:\nThe Sonship Commentary Bible – New Testament, a groundbreaking resource created to finally help you step into your true identity as God's child.\n\nHere’s the deal:\nMost people live anxious, uncertain, and insecure—wondering if they're good enough. Why? Because they haven't fully grasped their divine identity as a child of God.\n\nBut imagine this:\n\n✅ Clarity Instead of Confusion✅ Confidence Instead of Doubt✅ Peace Instead of Anxiety✅ Purpose Instead of Emptiness\n\nSound good?\n\nThe Sonship Commentary Bible gives you all of that by clearly revealing who you are in Christ—verse by verse, page by page, truth by truth.\n\nWhy You NEED This:\n\n👉 Verse-by-Verse Sonship InsightsGet powerful, direct revelations on what it truly means to be God's beloved child.\n\n👉 Easy-to-Grasp Greek MeaningsQuickly understand original Greek meanings to gain deeper biblical insights.\n\n👉 Immediate TransformationApply practical, life-changing truths instantly, walking daily in the assurance of your new identity.\n\n👉 Live Fearlessly & ConfidentlyErase insecurity and live confidently, knowing your worth in God’s eyes.\n\nPlus, Incredible Bonuses:\n\n🎁 Expanded Commentary on the Gospel of JohnGo deeper than ever into the life-changing truths of spiritual sonship through a full, detailed study of the Gospel of John.\n\n🎁 The Benefits of SonshipA special bonus book unpacking the extraordinary benefits you inherit by truly living as God's child.\n\nREAL LIFE RESULTS:\n\n98% experience greater clarity about their spiritual identity.\n\n92% enjoy increased peace and reduced anxiety.\n\n90% develop stronger faith and deeper intimacy with God.\n\n87% see dramatic improvements in relationships.\n\n85% experience renewed purpose and fulfillment daily.\n\nThe World NEEDS This:\n\nToday, the world is struggling—searching desperately for meaning, acceptance, and love. But the answer isn’t found in temporary solutions or self-help quick fixes.\n\nThe answer is knowing who you truly are in Christ.\n\nWhen you grasp your sonship identity:\n\nYou stop chasing validation because you already have divine approval.\n\nYou stop living anxiously because you are secure in God’s unwavering love.\n\nYou live boldly, confidently, and purposefully, transforming your world.\n\nIt’s time to say goodbye to:\n❌ Doubts about your worth.❌ Constant anxiety and worry.❌ Feelings of emptiness or isolation.❌ Wondering if you're good enough for God.\n\nAnd say hello to:\n✅ Unshakable confidence in your identity.✅ Genuine peace that passes understanding.✅ A deeper, more intimate relationship with God.✅ A life filled with purpose, direction, and clarity.\n\nIt’s 100% FREE. Why Wait?\n\nThere's literally nothing to lose and everything to gain.\n\n📥 Download Your FREE Sonship Commentary Bible – New Testament NOW:\n\n👉 Download Now\n\nTake the first step. Claim your true identity. Your new life as God's beloved child starts now.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "System: Your task is to write a script for a short video of up to 60 seconds.\n\nFollow the best practices for high converting sales copy\n\nThe video consists of six parts, each containing captivating information. Please generate the voiceover script (S1-S6), a title (T), and a description (D) with three hashtags.\n\nReturn the response in a strictly formatted single-line compact JSON (remove all formatting symbols):\n\n{\"S1\":\"Voiceover text 1\", \"S2\":\"Voiceover text 2\", \"S3\":\"Voiceover text 3\", \"S4\":\"Voiceover text 4\", \"S5\":\"Voiceover text 5\", \"S6\":\"Voiceover text 6\", \"T\":\"Video title\", \"D\":\"Description #Hashtag1 #Hashtag2 #Hashtag3\"}\n\n\n\nIMPORTANT: Always call `format_final_response` to format your final response!\n\nHuman: Your task is to write a script for a short video of up to 60 seconds."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1180,
+        680
+      ],
+      "id": "40d04bcc-9cf2-4e2c-a1de-91de43cd023b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4",
+          "mode": "list",
+          "cachedResultName": "gpt-4"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1160,
+        920
+      ],
+      "id": "7984ee2d-f3be-4af3-a952-840f2c82a5dd",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "XMLG466YsMj0zGVZ",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\"S1\":\"\",\n\"S2\":\"\",\n\"S3\":\"\",\n\"S4\":\"\",\n\"S5\":\"\",\n\"S6\":\"\",\n\"T\":\"\",\n\"D\":\"\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        1360,
+        920
+      ],
+      "id": "d430dc70-509e-4ff7-a8eb-c6b88b09eca0",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://cloud.leonardo.ai/api/rest/v1/generations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"alchemy\": false,\n  \"height\": 1280,\n  \"modelId\": \"de7d3faf-762f-48e0-b3b7-9d0ac3a3fcf3\",\n  \"num_images\": 1,\n  \"presetStyle\": \"ANIME\",\n  \"prompt\": \"{{ $json.output.S1 }}\",\n  \"width\": 720\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "30418314-a686-4ad9-8604-9e85806bad20",
+      "name": "Generate Image 1 - LeonadoAI",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2020,
+        220
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "XqrhWOKIZClfef89",
+          "name": "leonardo.ai -  api access"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://cloud.leonardo.ai/api/rest/v1/generations/{{ $json.body.sdGenerationJob.generationId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "8eafa72f-f4cc-43fa-aaae-8d529a40d093",
+      "name": "Get Image 1 URL - LeonadoAI",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2500,
+        220
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "XqrhWOKIZClfef89",
+          "name": "leonardo.ai -  api access"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "26a8fed9-1b80-4587-ac97-778d00e12e91",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        2240,
+        220
+      ],
+      "webhookId": "a49e601c-4371-4f89-abe7-9a26d15b7ca3",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "minutes"
+      },
+      "id": "737a38a9-5e8b-40e5-8746-c59389c6699f",
+      "name": "Wait6",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        3640,
+        760
+      ],
+      "webhookId": "0cc0dc51-2343-4c62-8ea1-799d8e942eab",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {},
+      "id": "e66eea11-5c28-477e-a1eb-7677fbb79bab",
+      "name": "Wait1",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        2240,
+        420
+      ],
+      "webhookId": "5db4eb4f-00f9-4aa9-832c-b924899fccdd",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "id": "1cb55ab5-a0be-471f-8b53-9eb11bc47011",
+      "name": "Wait4",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        2240,
+        620
+      ],
+      "webhookId": "50be4d65-117b-4c05-b6e0-a5d92b1ef7fd",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {},
+      "id": "ddfc1cab-23e9-4b54-846e-fac9f979fb02",
+      "name": "Wait5",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        2240,
+        820
+      ],
+      "webhookId": "a281a4fd-89b6-4b81-afb0-a0fb3fdbeaea",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {},
+      "id": "1a32be3a-a622-4b4d-86ec-0ae4edda866c",
+      "name": "Wait7",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        2240,
+        1020
+      ],
+      "webhookId": "67d665f3-99eb-4095-b421-173253c06d82",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {},
+      "id": "81527d76-39d4-4744-bd02-d17dad6688e2",
+      "name": "Wait8",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        2240,
+        1240
+      ],
+      "webhookId": "a502b6b5-44a3-4c84-8455-1efb56c34def",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 7,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        3220,
+        680
+      ],
+      "id": "48f01509-9ae7-41a8-9244-76c61a43d73f",
+      "name": "Merge",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "=https://cloud.leonardo.ai/api/rest/v1/generations/{{ $json.body.sdGenerationJob.generationId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "b0126ba6-76fe-47c6-b129-cef6e65195f9",
+      "name": "Get Image 2 URL - LeonadoAI",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2500,
+        420
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "XqrhWOKIZClfef89",
+          "name": "leonardo.ai -  api access"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://cloud.leonardo.ai/api/rest/v1/generations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"alchemy\": false,\n  \"height\": 1280,\n  \"modelId\": \"de7d3faf-762f-48e0-b3b7-9d0ac3a3fcf3\",\n  \"num_images\": 1,\n  \"presetStyle\": \"ANIME\",\n  \"prompt\": \"create polaroid style photo about {{ $json.output.S2 }}\",\n  \"width\": 720\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "c066aab8-774e-4702-9f47-0f4b7272f69e",
+      "name": "Generate Image 2 - LeonadoAI",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2020,
+        420
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "XqrhWOKIZClfef89",
+          "name": "leonardo.ai -  api access"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://cloud.leonardo.ai/api/rest/v1/generations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"alchemy\": false,\n  \"height\": 1280,\n  \"modelId\": \"de7d3faf-762f-48e0-b3b7-9d0ac3a3fcf3\",\n  \"num_images\": 1,\n  \"presetStyle\": \"ANIME\",\n  \"prompt\": \"create polaroid style photo about {{ $json.output.S3 }}\",\n  \"width\": 720\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "9f9af0a7-c4db-4eb0-90fc-c76b33acce63",
+      "name": "Generate Image 3 - LeonadoAI",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2020,
+        620
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "XqrhWOKIZClfef89",
+          "name": "leonardo.ai -  api access"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://cloud.leonardo.ai/api/rest/v1/generations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"alchemy\": false,\n  \"height\": 1280,\n  \"modelId\": \"de7d3faf-762f-48e0-b3b7-9d0ac3a3fcf3\",\n  \"num_images\": 1,\n  \"presetStyle\": \"ANIME\",\n  \"prompt\": \"{{ $json.output.S4 }}  Science-fiction, distopia style.  vibrant and profound, characterized by clean lines and simple shapes that are seamlessly integrated into expressive and dynamic scenes.\",\n  \"width\": 720\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "c86d0515-1890-4ac6-b555-3674cd259aca",
+      "name": "Generate Image 4 - LeonadoAI",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2020,
+        820
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "XqrhWOKIZClfef89",
+          "name": "leonardo.ai -  api access"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://cloud.leonardo.ai/api/rest/v1/generations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"alchemy\": false,\n  \"height\": 1280,\n  \"modelId\": \"de7d3faf-762f-48e0-b3b7-9d0ac3a3fcf3\",\n  \"num_images\": 1,\n  \"presetStyle\": \"ANIME\",\n  \"prompt\": \"{{ $json.output.S5 }}  Science-fiction, distopia style.  vibrant and profound, characterized by clean lines and simple shapes that are seamlessly integrated into expressive and dynamic scenes.\",\n  \"width\": 720\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "c0134b96-8617-4504-9ec9-a0a701dfd3f1",
+      "name": "Generate Image 5 - LeonadoAI",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2020,
+        1020
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "XqrhWOKIZClfef89",
+          "name": "leonardo.ai -  api access"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://cloud.leonardo.ai/api/rest/v1/generations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"alchemy\": false,\n  \"height\": 1280,\n  \"modelId\": \"de7d3faf-762f-48e0-b3b7-9d0ac3a3fcf3\",\n  \"num_images\": 1,\n  \"presetStyle\": \"ANIME\",\n  \"prompt\": \"{{ $json.output.S6 }}  Science-fiction, distopia style.  vibrant and profound, characterized by clean lines and simple shapes that are seamlessly integrated into expressive and dynamic scenes.\",\n  \"width\": 720\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "48ba8f61-a7ef-4f22-9e6a-2c77c6a6ab41",
+      "name": "Generate Image 6 - LeonadoAI",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2020,
+        1240
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "XqrhWOKIZClfef89",
+          "name": "leonardo.ai -  api access"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://cloud.leonardo.ai/api/rest/v1/generations/{{ $json.body.sdGenerationJob.generationId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "8ac39a2c-a4f7-4c55-9356-797ee71b894c",
+      "name": "Get Image 3 URL - LeonadoAI",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2500,
+        620
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "XqrhWOKIZClfef89",
+          "name": "leonardo.ai -  api access"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://cloud.leonardo.ai/api/rest/v1/generations/{{ $json.body.sdGenerationJob.generationId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "c8728bea-cf75-438f-9e63-74a7f0b005f1",
+      "name": "Get Image 4 URL - LeonadoAI",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2500,
+        820
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "XqrhWOKIZClfef89",
+          "name": "leonardo.ai -  api access"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://cloud.leonardo.ai/api/rest/v1/generations/{{ $json.body.sdGenerationJob.generationId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "2fa192b4-f03a-4cab-833c-7d6964cf8cd1",
+      "name": "Get Image 5 URL - LeonadoAI",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2500,
+        1020
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "XqrhWOKIZClfef89",
+          "name": "leonardo.ai -  api access"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://cloud.leonardo.ai/api/rest/v1/generations/{{ $json.body.sdGenerationJob.generationId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "444f14fe-cfe8-460c-9fb0-1db3c232419c",
+      "name": "Get Image 6 URL - LeonadoAI",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2500,
+        1240
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "XqrhWOKIZClfef89",
+          "name": "leonardo.ai -  api access"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fd8624ea-c65a-4910-a2f4-5b229d0e7122",
+              "name": "Image url 1",
+              "value": "={{ $json.body.generations_by_pk.generated_images[0].url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2720,
+        220
+      ],
+      "id": "fbbb0191-68d7-4c0f-99b8-b1fd9a5c7dca",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fd8624ea-c65a-4910-a2f4-5b229d0e7122",
+              "name": "Image url 2",
+              "value": "={{ $json.body.generations_by_pk.generated_images[0].url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2720,
+        420
+      ],
+      "id": "f87d099b-e915-4b92-8e96-cef5b845b7f6",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8d2d3894-f175-47f9-a845-dde9a6e5e54c",
+              "name": "Image url 3",
+              "value": "={{ $json.body.generations_by_pk.generated_images[0].url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2720,
+        620
+      ],
+      "id": "a5833ba2-2a61-4aa4-94ad-cf8dd7f41a6b",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d3d23e43-c320-4f95-866b-9fc64e86c9d4",
+              "name": "Image url 4",
+              "value": "={{ $json.body.generations_by_pk.generated_images[0].url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2720,
+        820
+      ],
+      "id": "24464de7-fa52-47eb-817e-0acaef7c2059",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d3d23e43-c320-4f95-866b-9fc64e86c9d4",
+              "name": "Image url 5",
+              "value": "={{ $json.body.generations_by_pk.generated_images[0].url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2720,
+        1020
+      ],
+      "id": "afc66bc6-8440-4952-9fe9-4585329997ea",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d3d23e43-c320-4f95-866b-9fc64e86c9d4",
+              "name": "Image url 6",
+              "value": "={{ $json.body.generations_by_pk.generated_images[0].url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2720,
+        1240
+      ],
+      "id": "75862526-c48b-4516-a85b-3b013c94a9d7",
+      "name": "Edit Fields6"
+    },
+    {
+      "parameters": {
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3220,
+        1320
+      ],
+      "id": "339b8f9e-1303-4b06-8b20-5096755011a4",
+      "name": "Telegram",
+      "webhookId": "3cb023c7-b4f8-4eb5-b9ad-370a2deac2b7"
+    },
+    {
+      "parameters": {
+        "content": "# Image generation\n1. Link your Leonardo AI credential\n2. define the models you would like to use for image generation: https://docs.leonardo.ai/reference/listplatformmodels \n3. define the height-weight if your video. The default value is 720:1280 (short)\n4. In the prompt, describe the image style that you would like in your video\n5. [Automatic] once the image is generate, the image URL link is grabbed.",
+        "height": 1491,
+        "width": 1173,
+        "color": 6
+      },
+      "id": "0cd8143d-4640-4d24-99ca-350e2a6e9247",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1920,
+        -20
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "# Video Editing\n1. Link your creatomate credentail\n2. Add your Elevenlabs API to creatonate (inside project setting) \n3. Create a new empty AI generator story template in creatomate (change image source to URL)\n4. In the template, click ''use template'' and copy all the CURL inside \"Cre-generate video 1\" node\n5. Just drag and drop the image URL and scenario text to the json body in 'Cre-generate video 1\" node\n6. And now you are ready to go!",
+        "height": 751,
+        "width": 973,
+        "color": 4
+      },
+      "id": "a7e81ad2-c243-4bd6-8a14-c2ef3b1bc094",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3140,
+        360
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Optional: send video link to telegram and upload to youtube",
+        "height": 311,
+        "width": 973,
+        "color": 7
+      },
+      "id": "1ceaa107-96b7-407b-9307-5d3579f2fba6",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3140,
+        1180
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 18
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        1000,
+        680
+      ],
+      "id": "2989b8dd-c608-428f-bb59-1b414336be81",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        3800,
+        1320
+      ],
+      "id": "f5bb386a-15b0-4aa7-b96d-6e305700492c",
+      "name": "Facebook Graph API",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "JGwi9snHz8qoH1If",
+          "name": "Facebook Graph account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cre - Generate Video1": {
+      "main": [
+        [
+          {
+            "node": "Wait6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Generate Image 3 - LeonadoAI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate Image 4 - LeonadoAI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate Image 5 - LeonadoAI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate Image 6 - LeonadoAI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate Image 1 - LeonadoAI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate Image 2 - LeonadoAI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 6
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Image 1 - LeonadoAI": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Image 1 URL - LeonadoAI": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get Image 1 URL - LeonadoAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait6": {
+      "main": [
+        [
+          {
+            "node": "Cre - Get Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Get Image 2 URL - LeonadoAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait4": {
+      "main": [
+        [
+          {
+            "node": "Get Image 3 URL - LeonadoAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait5": {
+      "main": [
+        [
+          {
+            "node": "Get Image 4 URL - LeonadoAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait7": {
+      "main": [
+        [
+          {
+            "node": "Get Image 5 URL - LeonadoAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait8": {
+      "main": [
+        [
+          {
+            "node": "Get Image 6 URL - LeonadoAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Image 2 URL - LeonadoAI": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Image 2 - LeonadoAI": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Image 3 - LeonadoAI": {
+      "main": [
+        [
+          {
+            "node": "Wait4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Image 4 - LeonadoAI": {
+      "main": [
+        [
+          {
+            "node": "Wait5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Image 5 - LeonadoAI": {
+      "main": [
+        [
+          {
+            "node": "Wait7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Image 6 - LeonadoAI": {
+      "main": [
+        [
+          {
+            "node": "Wait8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Image 3 URL - LeonadoAI": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Image 4 URL - LeonadoAI": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Image 5 URL - LeonadoAI": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Image 6 URL - LeonadoAI": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Cre - Generate Video1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Edit Fields6": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YouTube": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7d218396-ae15-4162-bc7a-4ff89de5a64d",
+  "meta": {
+    "instanceId": "a9a1507c9edd4d9ea9ff76131c22772e8129c1cd5a698ebe640c78238c6ac725"
+  },
+  "id": "VMDBIVhtDPv4gc7o",
+  "tags": [
+    {
+      "createdAt": "2025-03-10T06:47:27.586Z",
+      "updatedAt": "2025-03-10T06:47:27.586Z",
+      "id": "PzpQG8zZwXtlOWhz",
+      "name": "Video"
+    }
+  ]
+}
